@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editable Text</title>
+    <script>
+   
+const apiUrl = "https://rtebol-a2cjdjgghrgwhyad.northeurope-01.azurewebsites.net/backend.php"; // Change to your actual domain
+
+async function loadContent() {
+    let response = await fetch(apiUrl);
+    let data = await response.json();
+
+    const container = document.getElementById("content");
+    container.innerHTML = "";
+
+    Object.keys(data).forEach(category => {
+        let section = document.createElement("div");
+        section.innerHTML = `<h3>${category}</h3>`;
+        
+        data[category].forEach(item => {
+            let p = document.createElement("p");
+            p.contentEditable = true;
+            p.dataset.id = item.id;
+            p.innerText = item.text;
+            section.appendChild(p);
+        });
+
+        container.appendChild(section);
+    });
+}
+
+async function saveContent() {
+    let updatedData = {};
+
+    document.querySelectorAll("#content p").forEach(p => {
+        let id = p.dataset.id;
+        let text = p.innerText;
+
+        updatedData[id] = { id: id, text: text };
+    });
+
+    await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData)
+    });
+
+    alert("Saved successfully!");
+}
+
+document.addEventListener("DOMContentLoaded", loadContent);
+
+    </script>
+</head>
+<body onload="loadContent()">
+    <div id="content"></div>
+    <button onclick="saveContent()">Save Changes</button>
+</body>
+</html>
